@@ -1,11 +1,14 @@
 import '../models/smart_box_data.dart';
 
 class DummyData {
-  static SmartBoxData sampleBox = SmartBoxData(
-    status: 'Online',
-    riceKg: 12.5,
-    wheatKg: 8.0,
-    sugarKg: 3.2,
-    lastUpdated: DateTime.now(),
+  static const SmartBoxData sampleBox = SmartBoxData(
+    containerName: 'Rice Box',
+    currentWeight: 3.2,
+    capacity: 5.0,
+    stockLevel: 64,
+    status: 'Normal',
+    refillDetected: false,
+    battery: 78,
+    connectionStatus: 'Online',
   );
 }

@@ -4,6 +4,6 @@ import 'package:smart_ration_box/app.dart';
 void main() {
   testWidgets('Dashboard renders title', (WidgetTester tester) async {
     await tester.pumpWidget(const SmartRationBoxApp());
-    expect(find.text('Smart Ration Box'), findsOneWidget);
+    expect(find.text('RationBox'), findsOneWidget);
   });
 }
