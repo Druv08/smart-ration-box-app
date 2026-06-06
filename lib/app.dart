@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'screens/dashboard_screen.dart';
+import 'config/theme.dart';
+import 'screens/home_screen.dart';
 import 'utils/constants.dart';
 
 class SmartRationBoxApp extends StatelessWidget {
@@ -11,11 +11,8 @@ class SmartRationBoxApp extends StatelessWidget {
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppConstants.primaryColor),
-        useMaterial3: true,
-      ),
-      home: const DashboardScreen(),
+      theme: AppTheme.darkTheme,
+      home: const HomeScreen(),
     );
   }
 }
