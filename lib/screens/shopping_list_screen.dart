@@ -52,7 +52,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.gold.withOpacity(0.15),
+                        color: AppTheme.gold.withValues(alpha:0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -137,7 +137,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: AppTheme.gold.withOpacity(
+                                            color: AppTheme.gold.withValues(alpha:
                                               0.15,
                                             ),
                                             borderRadius: BorderRadius.circular(
@@ -190,7 +190,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   const SizedBox(height: 24),
 
                   // Purchased Items
@@ -202,7 +202,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: LuxuryCard(
                           padding: const EdgeInsets.all(10),
-                          backgroundColor: AppTheme.darkerCharcoal.withOpacity(
+                          backgroundColor: AppTheme.darkerCharcoal.withValues(alpha:
                             0.5,
                           ),
                           child: Row(
@@ -227,7 +227,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ]),
               ),
@@ -268,7 +268,7 @@ class _SectionHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: AppTheme.gold.withOpacity(0.15),
+            color: AppTheme.gold.withValues(alpha:0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(

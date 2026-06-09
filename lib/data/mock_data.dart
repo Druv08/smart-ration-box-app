@@ -4,29 +4,80 @@ import '../models/shopping_item.dart';
 import '../models/family_member.dart';
 import '../models/analytics_data.dart';
 
+/// Single source of truth for all in-app mock data.
+/// Replace individual box entries with a real [BoxDataSource] impl
+/// (Firebase or ESP32) when hardware is connected — see
+/// `lib/services/box_data_source.dart`.
 class MockData {
   // ============ Smart Box Data ============
-  static const SmartBoxData riceBox = SmartBoxData(
+  // Each box below demonstrates a different alert state so all five
+  // dashboard alert types (All Good, Low Stock, Battery Low,
+  // Device Offline, Refill Detected) can be seen on the dashboard
+  // by tapping through containers.
+
+  /// All Good — healthy stock, good battery, online.
+  static final SmartBoxData riceBox = SmartBoxData(
     containerName: 'Rice Box',
-    currentWeight: 3.2,
-    capacity: 5.0,
-    stockLevel: 64,
+    currentWeight: 6.5,
+    capacity: 10.0,
     status: 'Normal',
     refillDetected: false,
     battery: 78,
     connectionStatus: 'Online',
+    lastRefillDate: DateTime(2026, 5, 26), // ~15 days ago
   );
 
-  static const SmartBoxData wheatBox = SmartBoxData(
-    containerName: 'Wheat Box',
-    currentWeight: 1.8,
-    capacity: 4.0,
-    stockLevel: 45,
+  /// Low Stock alert — stock below 25 % of 5 kg capacity.
+  static final SmartBoxData dalBox = SmartBoxData(
+    containerName: 'Dal Box',
+    currentWeight: 1.0,
+    capacity: 5.0,
+    status: 'Low',
+    refillDetected: false,
+    battery: 72,
+    connectionStatus: 'Online',
+    lastRefillDate: DateTime(2026, 5, 19), // ~22 days ago
+  );
+
+  /// Battery Low alert — battery under 20 %.
+  static final SmartBoxData sugarBox = SmartBoxData(
+    containerName: 'Sugar Box',
+    currentWeight: 2.0,
+    capacity: 3.0,
     status: 'Normal',
     refillDetected: false,
-    battery: 92,
+    battery: 12,
     connectionStatus: 'Online',
+    lastRefillDate: DateTime(2026, 5, 11), // ~30 days ago
   );
+
+  /// Refill Detected alert — a top-up was sensed by the load cell.
+  static final SmartBoxData wheatBox = SmartBoxData(
+    containerName: 'Wheat Box',
+    currentWeight: 8.0,
+    capacity: 10.0,
+    status: 'Normal',
+    refillDetected: true,
+    battery: 88,
+    connectionStatus: 'Online',
+    lastRefillDate: DateTime(2026, 6, 9), // yesterday
+  );
+
+  /// Device Offline + Low Stock — offline with almost empty stock (25 kg sack).
+  static final SmartBoxData grainSack = SmartBoxData(
+    containerName: 'Grain Sack',
+    currentWeight: 5.0,
+    capacity: 25.0,
+    status: 'Low',
+    refillDetected: false,
+    battery: 64,
+    connectionStatus: 'Offline',
+    lastRefillDate: DateTime(2026, 5, 6), // ~35 days ago
+  );
+
+  /// All boxes in display order. First entry is the dashboard primary view.
+  static List<SmartBoxData> get allBoxes =>
+      [riceBox, dalBox, sugarBox, wheatBox, grainSack];
 
   // ============ Inventory Items ============
   static List<InventoryItem> inventoryItems = [
@@ -34,48 +85,48 @@ class MockData {
       id: 'inv-001',
       name: 'Basmati Rice',
       category: 'Grains',
-      quantity: 3.2,
-      capacity: 5.0,
+      quantity: 6.5,
+      capacity: 10.0,
       unit: 'kg',
       status: 'In Stock',
       owner: 'Raj Kumar',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 15)),
+      lastRefilled: DateTime(2026, 5, 26),
       location: 'Kitchen Pantry',
     ),
     InventoryItem(
       id: 'inv-002',
       name: 'Whole Wheat Flour',
       category: 'Grains',
-      quantity: 1.8,
-      capacity: 4.0,
+      quantity: 8.0,
+      capacity: 10.0,
       unit: 'kg',
       status: 'In Stock',
       owner: 'Priya Singh',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 8)),
+      lastRefilled: DateTime(2026, 6, 9),
       location: 'Kitchen Pantry',
     ),
     InventoryItem(
       id: 'inv-003',
       name: 'Lentils (Dal)',
       category: 'Legumes',
-      quantity: 0.8,
-      capacity: 2.0,
+      quantity: 1.0,
+      capacity: 5.0,
       unit: 'kg',
       status: 'Low Stock',
       owner: 'Raj Kumar',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 22)),
+      lastRefilled: DateTime(2026, 5, 19),
       location: 'Kitchen Pantry',
     ),
     InventoryItem(
       id: 'inv-004',
       name: 'Sugar',
       category: 'Sweeteners',
-      quantity: 2.5,
+      quantity: 2.0,
       capacity: 3.0,
       unit: 'kg',
       status: 'In Stock',
       owner: 'Priya Singh',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 30)),
+      lastRefilled: DateTime(2026, 5, 11),
       location: 'Kitchen Cabinet',
     ),
     InventoryItem(
@@ -87,7 +138,7 @@ class MockData {
       unit: 'kg',
       status: 'Low Stock',
       owner: 'Raj Kumar',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 45)),
+      lastRefilled: DateTime(2026, 4, 26),
       location: 'Spice Rack',
     ),
     InventoryItem(
@@ -99,7 +150,7 @@ class MockData {
       unit: 'liters',
       status: 'In Stock',
       owner: 'Priya Singh',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 10)),
+      lastRefilled: DateTime(2026, 5, 31),
       location: 'Kitchen Pantry',
     ),
     InventoryItem(
@@ -111,19 +162,19 @@ class MockData {
       unit: 'kg',
       status: 'In Stock',
       owner: 'Raj Kumar',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 60)),
+      lastRefilled: DateTime(2026, 4, 11),
       location: 'Kitchen Cabinet',
     ),
     InventoryItem(
       id: 'inv-008',
-      name: 'Basmati Rice (Secondary)',
+      name: 'Bulk Grain Sack',
       category: 'Grains',
-      quantity: 0.2,
-      capacity: 3.0,
+      quantity: 5.0,
+      capacity: 25.0,
       unit: 'kg',
       status: 'Low Stock',
       owner: 'Priya Singh',
-      lastRefilled: DateTime.now().subtract(const Duration(days: 35)),
+      lastRefilled: DateTime(2026, 5, 6),
       location: 'Store Room',
     ),
   ];
@@ -138,7 +189,7 @@ class MockData {
       unit: 'kg',
       estimatedCost: 350,
       isPurchased: false,
-      addedDate: DateTime.now().subtract(const Duration(days: 2)),
+      addedDate: DateTime(2026, 6, 8),
     ),
     ShoppingItem(
       id: 'shop-002',
@@ -148,7 +199,7 @@ class MockData {
       unit: 'kg',
       estimatedCost: 180,
       isPurchased: false,
-      addedDate: DateTime.now().subtract(const Duration(days: 1)),
+      addedDate: DateTime(2026, 6, 9),
     ),
     ShoppingItem(
       id: 'shop-003',
@@ -158,8 +209,8 @@ class MockData {
       unit: 'kg',
       estimatedCost: 75,
       isPurchased: true,
-      addedDate: DateTime.now().subtract(const Duration(days: 5)),
-      purchasedDate: DateTime.now().subtract(const Duration(days: 2)),
+      addedDate: DateTime(2026, 6, 5),
+      purchasedDate: DateTime(2026, 6, 8),
     ),
     ShoppingItem(
       id: 'shop-004',
@@ -169,8 +220,8 @@ class MockData {
       unit: 'kg',
       estimatedCost: 100,
       isPurchased: true,
-      addedDate: DateTime.now().subtract(const Duration(days: 4)),
-      purchasedDate: DateTime.now().subtract(const Duration(days: 1)),
+      addedDate: DateTime(2026, 6, 6),
+      purchasedDate: DateTime(2026, 6, 9),
     ),
     ShoppingItem(
       id: 'shop-005',
@@ -180,7 +231,7 @@ class MockData {
       unit: 'kg',
       estimatedCost: 120,
       isPurchased: false,
-      addedDate: DateTime.now(),
+      addedDate: DateTime(2026, 6, 10),
       notes: 'High quality',
     ),
     ShoppingItem(
@@ -191,7 +242,7 @@ class MockData {
       unit: 'liters',
       estimatedCost: 280,
       isPurchased: false,
-      addedDate: DateTime.now().subtract(const Duration(days: 3)),
+      addedDate: DateTime(2026, 6, 7),
     ),
     ShoppingItem(
       id: 'shop-007',
@@ -201,8 +252,8 @@ class MockData {
       unit: 'kg',
       estimatedCost: 200,
       isPurchased: true,
-      addedDate: DateTime.now().subtract(const Duration(days: 6)),
-      purchasedDate: DateTime.now().subtract(const Duration(days: 3)),
+      addedDate: DateTime(2026, 6, 4),
+      purchasedDate: DateTime(2026, 6, 7),
     ),
   ];
 
@@ -213,7 +264,7 @@ class MockData {
       name: 'Raj Kumar',
       role: 'Admin',
       email: 'raj@example.com',
-      joinedDate: DateTime.now().subtract(const Duration(days: 180)),
+      joinedDate: DateTime(2025, 12, 12),
       isActive: true,
     ),
     FamilyMember(
@@ -221,7 +272,7 @@ class MockData {
       name: 'Priya Singh',
       role: 'Member',
       email: 'priya@example.com',
-      joinedDate: DateTime.now().subtract(const Duration(days: 150)),
+      joinedDate: DateTime(2026, 1, 11),
       isActive: true,
     ),
     FamilyMember(
@@ -229,7 +280,7 @@ class MockData {
       name: 'Arjun Kumar',
       role: 'Member',
       email: 'arjun@example.com',
-      joinedDate: DateTime.now().subtract(const Duration(days: 100)),
+      joinedDate: DateTime(2026, 3, 2),
       isActive: true,
     ),
     FamilyMember(
@@ -237,16 +288,15 @@ class MockData {
       name: 'Neha Sharma',
       role: 'Guest',
       email: 'neha@example.com',
-      joinedDate: DateTime.now().subtract(const Duration(days: 30)),
+      joinedDate: DateTime(2026, 5, 11),
       isActive: true,
     ),
   ];
 
   // ============ Analytics Data ============
   static List<AnalyticsData> getAnalyticsDataForMonth() {
-    final now = DateTime.now();
-    final startDate = DateTime(now.year, now.month, 1);
-    final days = DateTime(now.year, now.month + 1, 0).day;
+    final startDate = DateTime(2026, 6, 1);
+    const days = 30;
 
     return List.generate(days, (index) {
       final date = startDate.add(Duration(days: index));
@@ -264,48 +314,47 @@ class MockData {
   static List<RefillEntry> refillHistory = [
     RefillEntry(
       id: 'ref-001',
-      date: DateTime.now().subtract(const Duration(days: 15)),
+      date: DateTime(2026, 5, 26),
       amount: 5.0,
       containerName: 'Rice Box',
       notes: 'Regular refill',
     ),
     RefillEntry(
       id: 'ref-002',
-      date: DateTime.now().subtract(const Duration(days: 22)),
+      date: DateTime(2026, 5, 19),
       amount: 2.0,
-      containerName: 'Lentils Container',
+      containerName: 'Dal Box',
       notes: 'Low stock refill',
     ),
     RefillEntry(
       id: 'ref-003',
-      date: DateTime.now().subtract(const Duration(days: 30)),
-      amount: 3.0,
+      date: DateTime(2026, 6, 9),
+      amount: 3.5,
       containerName: 'Wheat Box',
       notes: 'Monthly stock replenishment',
     ),
     RefillEntry(
       id: 'ref-004',
-      date: DateTime.now().subtract(const Duration(days: 45)),
+      date: DateTime(2026, 4, 26),
       amount: 1.0,
-      containerName: 'Spices Container',
+      containerName: 'Sugar Box',
       notes: 'Emergency top-up',
     ),
   ];
 
   static List<MonthlyStats> getMonthlyStats() {
     final analytics = getAnalyticsDataForMonth();
-    final now = DateTime.now();
 
     double totalConsumption = 0;
     int refillCount = 0;
     double totalRefills = 0;
 
-    for (var entry in analytics) {
+    for (final entry in analytics) {
       totalConsumption += entry.consumption;
     }
 
-    for (var refill in refillHistory) {
-      if (refill.date.month == now.month && refill.date.year == now.year) {
+    for (final refill in refillHistory) {
+      if (refill.date.month == 6 && refill.date.year == 2026) {
         refillCount++;
         totalRefills += refill.amount;
       }
@@ -313,35 +362,35 @@ class MockData {
 
     return [
       MonthlyStats(
-        month: 'January 2024',
+        month: 'April 2026',
         totalConsumption: 12.5,
         totalRefills: 8.0,
         refillCount: 3,
         dailyData: List.generate(
-          31,
+          30,
           (i) => AnalyticsData(
-            id: 'jan-$i',
-            date: DateTime(2024, 1, i + 1),
+            id: 'apr-$i',
+            date: DateTime(2026, 4, i + 1),
             consumption: 0.15 + (i % 7) * 0.05,
           ),
         ),
       ),
       MonthlyStats(
-        month: 'February 2024',
+        month: 'May 2026',
         totalConsumption: 11.8,
         totalRefills: 7.5,
         refillCount: 2,
         dailyData: List.generate(
-          29,
+          31,
           (i) => AnalyticsData(
-            id: 'feb-$i',
-            date: DateTime(2024, 2, i + 1),
+            id: 'may-$i',
+            date: DateTime(2026, 5, i + 1),
             consumption: 0.14 + (i % 7) * 0.04,
           ),
         ),
       ),
       MonthlyStats(
-        month: 'Current Month',
+        month: 'June 2026',
         totalConsumption: totalConsumption,
         totalRefills: totalRefills,
         refillCount: refillCount,

@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: AppTheme.gold.withOpacity(0.2),
+                                color: AppTheme.gold.withValues(alpha:0.2),
                                 borderRadius: BorderRadius.circular(25),
                               ),
                               child: const Icon(
@@ -162,7 +162,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: AppTheme.gold.withOpacity(0.15),
+                                color: AppTheme.gold.withValues(alpha:0.15),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Icon(
@@ -220,7 +220,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                   const SizedBox(height: 24),
 
                   // Theme Settings
@@ -321,7 +321,7 @@ class _SettingToggle extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.gold.withOpacity(0.15),
+              color: AppTheme.gold.withValues(alpha:0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: AppTheme.gold, size: 18),
@@ -340,7 +340,7 @@ class _SettingToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.gold,
+            activeThumbColor: AppTheme.gold,
             inactiveThumbColor: AppTheme.lightGray,
             inactiveTrackColor: AppTheme.darkerCharcoal,
           ),
@@ -374,7 +374,7 @@ class _SettingItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppTheme.gold.withOpacity(0.15),
+                color: AppTheme.gold.withValues(alpha:0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: AppTheme.gold, size: 18),

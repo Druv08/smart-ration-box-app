@@ -12,8 +12,8 @@ class StockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final percent = (data.stockLevel / 100).clamp(0.0, 1.0);
-    final isLowStock = data.stockLevel < 25;
+    final percent = (data.stockPercentage / 100).clamp(0.0, 1.0);
+    final isLowStock = data.isLowStock;
 
     return LuxuryCard(
       onTap: onTap,
@@ -54,7 +54,7 @@ class StockCard extends StatelessWidget {
                       (isLowStock
                               ? AppTheme.warningOrange
                               : AppTheme.successGreen)
-                          .withOpacity(0.15),
+                          .withValues(alpha:0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -71,7 +71,7 @@ class StockCard extends StatelessWidget {
 
           // Stock Level Display
           Text(
-            '${data.stockLevel.toStringAsFixed(0)}% full',
+            '${data.stockPercentage.toStringAsFixed(0)}% full',
             style: const TextStyle(
               color: AppTheme.lighterGray,
               fontSize: 28,
@@ -91,7 +91,7 @@ class StockCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: percent,
               minHeight: 10,
-              backgroundColor: AppTheme.darkerCharcoal.withOpacity(0.5),
+              backgroundColor: AppTheme.darkerCharcoal.withValues(alpha:0.5),
               valueColor: AlwaysStoppedAnimation(
                 isLowStock ? AppTheme.warningOrange : AppTheme.gold,
               ),
@@ -104,10 +104,10 @@ class StockCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.warningOrange.withOpacity(0.15),
+                color: AppTheme.warningOrange.withValues(alpha:0.15),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: AppTheme.warningOrange.withOpacity(0.3),
+                  color: AppTheme.warningOrange.withValues(alpha:0.3),
                 ),
               ),
               child: const Text(
