@@ -29,19 +29,19 @@ class LuxuryCard extends StatelessWidget {
     final defaultShadow = showGlow
         ? [
             BoxShadow(
-              color: AppTheme.gold.withOpacity(0.15),
+              color: AppTheme.gold.withValues(alpha:0.15),
               blurRadius: 20,
               spreadRadius: 2,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha:0.3),
               blurRadius: 8,
               spreadRadius: 0,
             ),
           ]
         : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha:0.25),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

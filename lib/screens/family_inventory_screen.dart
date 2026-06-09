@@ -62,7 +62,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                                   });
                                 },
                                 backgroundColor: AppTheme.darkerCharcoal,
-                                selectedColor: AppTheme.gold.withOpacity(0.2),
+                                selectedColor: AppTheme.gold.withValues(alpha:0.2),
                                 side: BorderSide(
                                   color: selectedFilter == filter
                                       ? AppTheme.gold
@@ -126,10 +126,10 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: item.isLowStock
-                                        ? AppTheme.warningOrange.withOpacity(
+                                        ? AppTheme.warningOrange.withValues(alpha:
                                             0.15,
                                           )
-                                        : AppTheme.successGreen.withOpacity(
+                                        : AppTheme.successGreen.withValues(alpha:
                                             0.15,
                                           ),
                                     borderRadius: BorderRadius.circular(6),
@@ -206,7 +206,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ]),
               ),
             ),

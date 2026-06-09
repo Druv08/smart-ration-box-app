@@ -69,7 +69,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? AppTheme.gold.withOpacity(0.2)
+                                    ? AppTheme.gold.withValues(alpha:0.2)
                                     : AppTheme.darkerCharcoal,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
@@ -171,7 +171,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                     width: 20,
                                     height: 100 * (value / maxValue),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.gold.withOpacity(0.7),
+                                      color: AppTheme.gold.withValues(alpha:0.7),
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(4),
                                         topRight: Radius.circular(4),
@@ -215,7 +215,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: AppTheme.successGreen.withOpacity(0.15),
+                                color: AppTheme.successGreen.withValues(alpha:0.15),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(
@@ -260,7 +260,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ]),
               ),
             ),
@@ -275,7 +275,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final diff = now.difference(date).inDays;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
-    return '${diff} days ago';
+    return '$diff days ago';
   }
 }
 
