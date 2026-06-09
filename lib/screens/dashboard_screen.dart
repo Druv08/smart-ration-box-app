@@ -1,277 +1,311 @@
 import 'package:flutter/material.dart';
-
-import '../data/dummy_data.dart';
+import '../config/theme.dart';
 import '../models/smart_box_data.dart';
-import '../widgets/alert_card.dart';
-import '../widgets/info_card.dart';
+import '../services/box_data_source.dart';
+import '../services/mock_box_data_source.dart';
+import '../widgets/common/luxury_card.dart';
+import '../widgets/common/status_indicator.dart';
+import '../widgets/dashboard/alert_section.dart';
+import '../widgets/dashboard/device_info_grid.dart';
+import '../widgets/dashboard/stock_card.dart';
 
-/// Main RationBox dashboard. Mobile-first layout:
-///   header  →  stock card  →  info grid  →  alert.
-class DashboardScreen extends StatelessWidget {
+/// Main dashboard. Reads boxes through a [BoxDataSource] so we can
+/// swap dummy → Firebase → ESP32 later without touching the UI.
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final SmartBoxData data = DummyData.sampleBox;
-    final AlertState alert = DummyData.computeAlertState(data);
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
-      // Mobile-style app: cap content width so it still looks like a
-      // phone app when opened in a desktop browser during development.
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(isOnline: data.isOnline),
-                  const SizedBox(height: 18),
-                  _StockCard(data: data),
-                  const SizedBox(height: 20),
-                  _SectionTitle(text: 'Device Info'),
-                  const SizedBox(height: 10),
-                  _InfoGrid(data: data),
-                  const SizedBox(height: 20),
-                  _SectionTitle(text: 'Alerts'),
-                  const SizedBox(height: 10),
-                  AlertCard(state: alert),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-/// Top header with app name, tagline and live device status pill.
-class _Header extends StatelessWidget {
-  final bool isOnline;
-  const _Header({required this.isOnline});
+class _DashboardScreenState extends State<DashboardScreen> {
+  // TODO: inject via provider once we adopt one.
+  final BoxDataSource _dataSource = const MockBoxDataSource();
+
+  List<SmartBoxData> _allBoxes = const [];
+  SmartBoxData? _primary;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBoxes();
+  }
+
+  Future<void> _loadBoxes() async {
+    final boxes = await _dataSource.fetchBoxes();
+    if (!mounted) return;
+    setState(() {
+      _allBoxes = boxes;
+      _primary = boxes.isNotEmpty ? boxes.first : null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // App icon
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.inventory_2, color: Colors.white, size: 24),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Column(
+    final primary = _primary;
+    return Scaffold(
+      backgroundColor: AppTheme.darkBg,
+      body: SafeArea(
+        child: primary == null
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.gold),
+              )
+            : _buildContent(primary),
+      ),
+    );
+  }
+
+  Widget _buildContent(SmartBoxData primary) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          backgroundColor: AppTheme.darkBg,
+          floating: true,
+          pinned: false,
+          elevation: 0,
+          centerTitle: false,
+          title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'RationBox',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Dashboard',
+                style: TextStyle(
+                  color: AppTheme.lighterGray,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              SizedBox(height: 2),
               Text(
                 'Smart Ration Monitoring',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  color: AppTheme.lightGray,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: StatusIndicator(
+                  isActive: primary.isOnline,
+                  label: primary.isOnline ? 'Online' : 'Offline',
+                  icon: primary.isOnline ? Icons.wifi : Icons.wifi_off,
+                  activeColor: AppTheme.successGreen,
+                  inactiveColor: AppTheme.errorRed,
+                  showDot: true,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 8),
+                StockCard(data: primary),
+                const SizedBox(height: 24),
+                const _SectionHeader(title: 'Device Information'),
+                const SizedBox(height: 12),
+                DeviceInfoGrid(data: primary),
+                const SizedBox(height: 24),
+                const _SectionHeader(title: 'Quick Stats'),
+                const SizedBox(height: 12),
+                _QuickStatsGrid(data: primary),
+                const SizedBox(height: 24),
+                if (_allBoxes.length > 1) ...[
+                  const _SectionHeader(
+                    title: 'Other Containers',
+                    actionLabel: 'View All',
+                  ),
+                  const SizedBox(height: 12),
+                  ..._buildOtherContainers(),
+                  const SizedBox(height: 24),
+                ],
+                const _SectionHeader(title: 'Alerts & Notifications'),
+                const SizedBox(height: 12),
+                AlertSection(data: primary),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildOtherContainers() {
+    return _allBoxes.skip(1).map((box) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: LuxuryCard(
+          padding: const EdgeInsets.all(14),
+          onTap: () => setState(() => _primary = box),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.gold.withValues(alpha:0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.inventory_2,
+                  color: AppTheme.gold,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      box.containerName,
+                      style: const TextStyle(
+                        color: AppTheme.lighterGray,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${box.stockPercentage.toStringAsFixed(0)}% • ${box.currentWeight}/${box.capacity}kg',
+                      style: const TextStyle(
+                        color: AppTheme.lightGray,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: AppTheme.gold,
+                size: 16,
               ),
             ],
           ),
         ),
-        _StatusPill(isOnline: isOnline),
+      );
+    }).toList();
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String? actionLabel;
+
+  const _SectionHeader({
+    required this.title,
+    this.actionLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppTheme.lighterGray,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (actionLabel != null)
+          GestureDetector(
+            child: Text(
+              actionLabel!,
+              style: const TextStyle(
+                color: AppTheme.gold,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
       ],
     );
   }
 }
 
-/// Small green/red pill that shows device connection at a glance.
-class _StatusPill extends StatelessWidget {
-  final bool isOnline;
-  const _StatusPill({required this.isOnline});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isOnline ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            isOnline ? 'Online' : 'Offline',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Prominent card showing container name, % full and weight.
-class _StockCard extends StatelessWidget {
+class _QuickStatsGrid extends StatelessWidget {
   final SmartBoxData data;
-  const _StockCard({required this.data});
+  const _QuickStatsGrid({required this.data});
 
-  @override
-  Widget build(BuildContext context) {
-    final double percent = (data.stockLevel / 100).clamp(0.0, 1.0);
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2E7D32), Color(0xFF43A047)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            data.containerName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${data.stockLevel.toStringAsFixed(0)}% full',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${data.currentWeight} kg / ${data.capacity} kg',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 14),
-          // Stock progress bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.25),
-              valueColor: const AlwaysStoppedAnimation(Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _lastRefillLabel() {
+    final date = data.lastRefillDate;
+    if (date == null) return 'Unknown';
+    final diff = DateTime(2026, 6, 10).difference(date).inDays;
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return '$diff days ago';
   }
-}
-
-/// 2-column responsive grid of small info cards.
-class _InfoGrid extends StatelessWidget {
-  final SmartBoxData data;
-  const _InfoGrid({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final lowBattery = data.battery < 20;
-
-    final tiles = <Widget>[
-      InfoCard(
-        icon: Icons.scale,
-        label: 'Current Weight',
-        value: '${data.currentWeight} kg',
-      ),
-      InfoCard(
-        icon: Icons.inventory_2_outlined,
-        label: 'Capacity',
-        value: '${data.capacity} kg',
-      ),
-      InfoCard(
-        icon: Icons.check_circle_outline,
-        label: 'Status',
-        value: data.status,
-        iconColor: const Color(0xFF2E7D32),
-      ),
-      InfoCard(
-        icon: Icons.local_shipping_outlined,
-        label: 'Refill',
-        value: data.refillDetected ? 'Detected' : 'Not Detected',
-        iconColor: const Color(0xFF1565C0),
-      ),
-      InfoCard(
-        icon: Icons.battery_full,
-        label: 'Battery',
-        value: '${data.battery}%',
-        iconColor: lowBattery ? Colors.red : const Color(0xFF2E7D32),
-      ),
-      InfoCard(
-        icon: data.isOnline ? Icons.wifi : Icons.wifi_off,
-        label: 'Connection',
-        value: data.connectionStatus,
-        iconColor: data.isOnline ? Colors.blue : Colors.red,
-      ),
-    ];
-
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 1.25,
-      children: tiles,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF333333),
+    final consumed = (data.capacity - data.currentWeight).clamp(0.0, data.capacity);
+    return Row(
+      children: [
+        Expanded(
+          child: LuxuryCard(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                const Icon(Icons.trending_up, color: AppTheme.gold, size: 20),
+                const SizedBox(height: 8),
+                const Text(
+                  'Consumed',
+                  style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${consumed.toStringAsFixed(2)} kg',
+                  style: const TextStyle(
+                    color: AppTheme.lighterGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: LuxuryCard(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                const Icon(Icons.calendar_today, color: AppTheme.gold, size: 20),
+                const SizedBox(height: 8),
+                const Text(
+                  'Last Refill',
+                  style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _lastRefillLabel(),
+                  style: const TextStyle(
+                    color: AppTheme.lighterGray,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
