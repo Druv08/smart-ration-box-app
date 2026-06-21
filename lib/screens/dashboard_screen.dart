@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/smart_box_data.dart';
@@ -8,6 +10,7 @@ import '../widgets/common/status_indicator.dart';
 import '../widgets/dashboard/alert_section.dart';
 import '../widgets/dashboard/device_info_grid.dart';
 import '../widgets/dashboard/stock_card.dart';
+import 'item_details_screen.dart';
 
 /// Main dashboard. Reads boxes through a [BoxDataSource] so we can
 /// swap dummy → Firebase → ESP32 later without touching the UI.
@@ -20,24 +23,38 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   // TODO: inject via provider once we adopt one.
-  final BoxDataSource _dataSource = const MockBoxDataSource();
+  final BoxDataSource _dataSource = MockBoxDataSource();
 
+  StreamSubscription<List<SmartBoxData>>? _subscription;
   List<SmartBoxData> _allBoxes = const [];
   SmartBoxData? _primary;
 
   @override
   void initState() {
     super.initState();
-    _loadBoxes();
+    // Listen to the live stream so simulated hardware changes (made on the
+    // details page) reflect on the dashboard alerts in real time.
+    _subscription = _dataSource.watchBoxes().listen((boxes) {
+      if (!mounted) return;
+      setState(() {
+        _allBoxes = boxes;
+        _primary = boxes.isNotEmpty ? boxes.first : null;
+      });
+    });
   }
 
-  Future<void> _loadBoxes() async {
-    final boxes = await _dataSource.fetchBoxes();
-    if (!mounted) return;
-    setState(() {
-      _allBoxes = boxes;
-      _primary = boxes.isNotEmpty ? boxes.first : null;
-    });
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  void _openDetails(SmartBoxData box) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ItemDetailsScreen(boxId: box.id),
+      ),
+    );
   }
 
   @override
@@ -110,7 +127,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 8),
-                StockCard(data: primary),
+                StockCard(data: primary, onTap: () => _openDetails(primary)),
                 const SizedBox(height: 24),
                 const _SectionHeader(title: 'Device Information'),
                 const SizedBox(height: 12),
@@ -146,7 +163,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.only(bottom: 12),
         child: LuxuryCard(
           padding: const EdgeInsets.all(14),
-          onTap: () => setState(() => _primary = box),
+          onTap: () => _openDetails(box),
           child: Row(
             children: [
               Container(

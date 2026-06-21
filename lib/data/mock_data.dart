@@ -17,6 +17,7 @@ class MockData {
 
   /// All Good — healthy stock, good battery, online.
   static final SmartBoxData riceBox = SmartBoxData(
+    id: 'rice-box',
     containerName: 'Rice Box',
     currentWeight: 6.5,
     capacity: 10.0,
@@ -29,6 +30,7 @@ class MockData {
 
   /// Low Stock alert — stock below 25 % of 5 kg capacity.
   static final SmartBoxData dalBox = SmartBoxData(
+    id: 'dal-box',
     containerName: 'Dal Box',
     currentWeight: 1.0,
     capacity: 5.0,
@@ -41,6 +43,7 @@ class MockData {
 
   /// Battery Low alert — battery under 20 %.
   static final SmartBoxData sugarBox = SmartBoxData(
+    id: 'sugar-box',
     containerName: 'Sugar Box',
     currentWeight: 2.0,
     capacity: 3.0,
@@ -53,6 +56,7 @@ class MockData {
 
   /// Refill Detected alert — a top-up was sensed by the load cell.
   static final SmartBoxData wheatBox = SmartBoxData(
+    id: 'wheat-box',
     containerName: 'Wheat Box',
     currentWeight: 8.0,
     capacity: 10.0,
@@ -65,6 +69,7 @@ class MockData {
 
   /// Device Offline + Low Stock — offline with almost empty stock (25 kg sack).
   static final SmartBoxData grainSack = SmartBoxData(
+    id: 'grain-sack',
     containerName: 'Grain Sack',
     currentWeight: 5.0,
     capacity: 25.0,
