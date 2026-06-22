@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../data/mock_data.dart';
 import '../models/smart_box_data.dart';
 import '../services/box_data_source.dart';
 import '../services/mock_box_data_source.dart';
 import '../widgets/common/luxury_card.dart';
-import '../widgets/common/status_indicator.dart';
 import '../widgets/dashboard/alert_section.dart';
-import '../widgets/dashboard/device_info_grid.dart';
-import '../widgets/dashboard/stock_card.dart';
 import 'item_details_screen.dart';
 
-/// Main dashboard. Reads boxes through a [BoxDataSource] so we can
-/// swap dummy → Firebase → ESP32 later without touching the UI.
+/// Main dashboard, styled after the light oak / kitchen product mockup.
+/// Reads boxes through a [BoxDataSource] so we can swap dummy → Firebase →
+/// ESP32 later without touching the UI, and listens to the live stream so
+/// simulated hardware changes update the cards in real time.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -33,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     // Listen to the live stream so simulated hardware changes (made on the
-    // details page) reflect on the dashboard alerts in real time.
+    // details page) reflect on the dashboard cards and alerts in real time.
     _subscription = _dataSource.watchBoxes().listen((boxes) {
       if (!mounted) return;
       setState(() {
@@ -67,116 +67,304 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ? const Center(
                 child: CircularProgressIndicator(color: AppTheme.gold),
               )
-            : _buildContent(primary),
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                children: [
+                  _GreetingHero(primary: primary),
+                  const SizedBox(height: 16),
+                  _StatusRow(primary: primary),
+                  const SizedBox(height: 24),
+                  _SectionHeader(
+                    title: 'Your Items',
+                    actionLabel: '+ Add Item',
+                    onAction: () => _showComingSoon('Add Item'),
+                  ),
+                  const SizedBox(height: 12),
+                  ..._allBoxes.map(
+                    (box) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _ItemCard(
+                        data: box,
+                        onTap: () => _openDetails(box),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const _SectionHeader(title: 'Alerts & Notifications'),
+                  const SizedBox(height: 12),
+                  // Week 2 alert system, preserved. Shows the active alerts for
+                  // the primary container, derived from live sensor data.
+                  AlertSection(data: primary),
+                  const SizedBox(height: 12),
+                  const _SectionHeader(title: 'Recent Activity'),
+                  const SizedBox(height: 12),
+                  const _RecentActivity(),
+                ],
+              ),
       ),
     );
   }
 
-  Widget _buildContent(SmartBoxData primary) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          backgroundColor: AppTheme.darkBg,
-          floating: true,
-          pinned: false,
-          elevation: 0,
-          centerTitle: false,
-          title: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Dashboard',
-                style: TextStyle(
-                  color: AppTheme.lighterGray,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+  void _showComingSoon(String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$feature is coming in a later week.')),
+    );
+  }
+}
+
+/// Top greeting band + a decorative oak container "hero" image area.
+class _GreetingHero extends StatelessWidget {
+  final SmartBoxData primary;
+  const _GreetingHero({required this.primary});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = MockData.familyMembers.isNotEmpty
+        ? MockData.familyMembers.first.name.split(' ').first
+        : 'there';
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.menu_rounded, color: AppTheme.lighterGray),
+            const Spacer(),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none_rounded,
+                    color: AppTheme.lighterGray),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.gold,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Smart Ration Monitoring',
-                style: TextStyle(
-                  color: AppTheme.lightGray,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: StatusIndicator(
-                  isActive: primary.isOnline,
-                  label: primary.isOnline ? 'Online' : 'Offline',
-                  icon: primary.isOnline ? Icons.wifi : Icons.wifi_off,
-                  activeColor: AppTheme.successGreen,
-                  inactiveColor: AppTheme.errorRed,
-                  showDot: true,
-                ),
-              ),
+              ],
             ),
           ],
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 8),
-                StockCard(data: primary, onTap: () => _openDetails(primary)),
-                const SizedBox(height: 24),
-                const _SectionHeader(title: 'Device Information'),
-                const SizedBox(height: 12),
-                DeviceInfoGrid(data: primary),
-                const SizedBox(height: 24),
-                const _SectionHeader(title: 'Quick Stats'),
-                const SizedBox(height: 12),
-                _QuickStatsGrid(data: primary),
-                const SizedBox(height: 24),
-                if (_allBoxes.length > 1) ...[
-                  const _SectionHeader(
-                    title: 'Other Containers',
-                    actionLabel: 'View All',
+        const SizedBox(height: 12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back,',
+                    style: TextStyle(
+                      color: AppTheme.lightGray,
+                      fontSize: 14,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  ..._buildOtherContainers(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$name!',
+                    style: const TextStyle(
+                      color: AppTheme.lighterGray,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Here's what's in your ration box.",
+                    style: TextStyle(
+                      color: AppTheme.lightGray,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
-                const _SectionHeader(title: 'Alerts & Notifications'),
-                const SizedBox(height: 12),
-                AlertSection(data: primary),
-              ],
+              ),
             ),
+            const SizedBox(width: 12),
+            _ContainerHero(weightLabel: '${primary.currentWeight} kg'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Simple oak-styled illustration standing in for the product photo.
+class _ContainerHero extends StatelessWidget {
+  final String weightLabel;
+  const _ContainerHero({required this.weightLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 92,
+      height: 92,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFD9B98C), Color(0xFFB07D4B)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.rice_bowl_rounded, color: Colors.white, size: 34),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3A322A).withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              weightLabel,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Battery + Connection status cards (PDF: two soft cards side by side).
+class _StatusRow extends StatelessWidget {
+  final SmartBoxData primary;
+  const _StatusRow({required this.primary});
+
+  @override
+  Widget build(BuildContext context) {
+    final batteryOk = !primary.isBatteryLow;
+    final online = primary.isOnline;
+    return Row(
+      children: [
+        Expanded(
+          child: _StatusCard(
+            icon: Icons.battery_charging_full_rounded,
+            iconColor: batteryOk ? AppTheme.successGreen : AppTheme.errorRed,
+            label: 'Battery',
+            value: '${primary.battery}%',
+            sub: batteryOk ? 'Good' : 'Low',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _StatusCard(
+            icon: online ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+            iconColor: online ? AppTheme.successGreen : AppTheme.errorRed,
+            label: 'Connection',
+            value: online ? 'Connected' : 'Offline',
+            sub: online ? 'Live' : 'No signal',
           ),
         ),
       ],
     );
   }
+}
 
-  List<Widget> _buildOtherContainers() {
-    return _allBoxes.skip(1).map((box) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: LuxuryCard(
-          padding: const EdgeInsets.all(14),
-          onTap: () => _openDetails(box),
-          child: Row(
+class _StatusCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final String sub;
+
+  const _StatusCard({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.sub,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LuxuryCard(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: AppTheme.lighterGray,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  sub,
+                  style: TextStyle(color: AppTheme.lightGray, fontSize: 10),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A ration item card: name, remaining weight, status chip, percentage,
+/// progress bar, and (when low) a refill hint row. Tappable → Item Details.
+class _ItemCard extends StatelessWidget {
+  final SmartBoxData data;
+  final VoidCallback onTap;
+
+  const _ItemCard({required this.data, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final low = data.isLowStock;
+    final percent = (data.stockPercentage / 100).clamp(0.0, 1.0);
+    final accent = low ? AppTheme.errorRed : AppTheme.successGreen;
+
+    return LuxuryCard(
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      child: Column(
+        children: [
+          Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.gold.withValues(alpha:0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.gold.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
-                  Icons.inventory_2,
-                  color: AppTheme.gold,
-                  size: 20,
-                ),
+                child: const Icon(Icons.inventory_2_rounded,
+                    color: AppTheme.gold, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -184,44 +372,204 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      box.containerName,
+                      data.containerName,
                       style: const TextStyle(
                         color: AppTheme.lighterGray,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${box.stockPercentage.toStringAsFixed(0)}% • ${box.currentWeight}/${box.capacity}kg',
-                      style: const TextStyle(
-                        color: AppTheme.lightGray,
-                        fontSize: 12,
-                      ),
+                      '${data.currentWeight} kg remaining',
+                      style: TextStyle(color: AppTheme.lightGray, fontSize: 12),
                     ),
+                    const SizedBox(height: 6),
+                    _StatusChip(low: low),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                color: AppTheme.gold,
-                size: 16,
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${data.stockPercentage.toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'of ${data.capacity} kg',
+                    style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
+                  ),
+                ],
               ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppTheme.lightGray, size: 20),
             ],
           ),
-        ),
-      );
-    }).toList();
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: percent,
+              minHeight: 8,
+              backgroundColor: AppTheme.darkerCharcoal,
+              valueColor: AlwaysStoppedAnimation(accent),
+            ),
+          ),
+          if (low) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.errorRed.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.hourglass_empty_rounded,
+                      color: AppTheme.errorRed, size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Low stock — plan a refill',
+                      style: TextStyle(
+                        color: AppTheme.errorRed,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final bool low;
+  const _StatusChip({required this.low});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = low ? AppTheme.errorRed : AppTheme.successGreen;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(low ? Icons.error_outline_rounded : Icons.check_circle_rounded,
+              color: color, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            low ? 'Low Stock' : 'Normal Stock',
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Recent refill activity pulled from mock refill history (display-only).
+class _RecentActivity extends StatelessWidget {
+  const _RecentActivity();
+
+  String _ago(DateTime date) {
+    final diff = DateTime.now().difference(date).inDays;
+    if (diff <= 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+    return '$diff days ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = [...MockData.refillHistory]
+      ..sort((a, b) => b.date.compareTo(a.date));
+    final recent = entries.take(3).toList();
+
+    return LuxuryCard(
+      child: Column(
+        children: [
+          for (var i = 0; i < recent.length; i++)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                border: i == recent.length - 1
+                    ? null
+                    : const Border(
+                        bottom: BorderSide(
+                            color: AppTheme.darkerCharcoal, width: 1),
+                      ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.successGreen.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.autorenew_rounded,
+                        color: AppTheme.successGreen, size: 16),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${recent[i].containerName} was refilled',
+                          style: const TextStyle(
+                            color: AppTheme.lighterGray,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '+${recent[i].amount} kg • ${_ago(recent[i].date)}',
+                          style: TextStyle(
+                              color: AppTheme.lightGray, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
 class _SectionHeader extends StatelessWidget {
   final String title;
   final String? actionLabel;
+  final VoidCallback? onAction;
 
   const _SectionHeader({
     required this.title,
     this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -239,89 +587,16 @@ class _SectionHeader extends StatelessWidget {
         ),
         if (actionLabel != null)
           GestureDetector(
+            onTap: onAction,
             child: Text(
               actionLabel!,
               style: const TextStyle(
                 color: AppTheme.gold,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-      ],
-    );
-  }
-}
-
-class _QuickStatsGrid extends StatelessWidget {
-  final SmartBoxData data;
-  const _QuickStatsGrid({required this.data});
-
-  String _lastRefillLabel() {
-    final date = data.lastRefillDate;
-    if (date == null) return 'Unknown';
-    final diff = DateTime(2026, 6, 10).difference(date).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    return '$diff days ago';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final consumed = (data.capacity - data.currentWeight).clamp(0.0, data.capacity);
-    return Row(
-      children: [
-        Expanded(
-          child: LuxuryCard(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                const Icon(Icons.trending_up, color: AppTheme.gold, size: 20),
-                const SizedBox(height: 8),
-                const Text(
-                  'Consumed',
-                  style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${consumed.toStringAsFixed(2)} kg',
-                  style: const TextStyle(
-                    color: AppTheme.lighterGray,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: LuxuryCard(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                const Icon(Icons.calendar_today, color: AppTheme.gold, size: 20),
-                const SizedBox(height: 8),
-                const Text(
-                  'Last Refill',
-                  style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _lastRefillLabel(),
-                  style: const TextStyle(
-                    color: AppTheme.lighterGray,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

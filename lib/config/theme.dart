@@ -1,37 +1,59 @@
 import 'package:flutter/material.dart';
 
+/// Light oak / kitchen-style palette (Week 3 redesign — see product mockup).
+///
+/// The constant NAMES are kept from the original dark luxury theme so every
+/// widget that already references them flips to the light look automatically.
+/// Only the VALUES changed; the semantic role of each name is noted below:
+///   * darkBg          → warm cream app background (scaffold)
+///   * darkCharcoal    → white card / surface
+///   * darkerCharcoal  → light oak tint (borders, inner fills, progress track)
+///   * gold / goldDark → warm oak‑brown accent (primary)
+///   * lighterGray     → espresso, primary text on cream
+///   * lightGray       → muted warm gray, secondary text
 class AppTheme {
   AppTheme._();
 
-  // Color Palette
-  static const Color darkBg = Color(0xFF0F0F0F);
-  static const Color darkCharcoal = Color(0xFF1F1F1F);
-  static const Color darkerCharcoal = Color(0xFF2D2D2D);
-  static const Color gold = Color(0xFFFBBF24);
-  static const Color goldDark = Color(0xFFF59E0B);
-  static const Color lightGray = Color(0xFFA0AEC0);
-  static const Color lighterGray = Color(0xFFCBD5E0);
-  static const Color veryLightGray = Color(0xFFE2E8F0);
+  // Color Palette (light oak)
+  static const Color darkBg = Color(0xFFFBF7F0); // warm cream background
+  static const Color darkCharcoal = Color(0xFFFFFFFF); // white card surface
+  static const Color darkerCharcoal = Color(0xFFEFE7DA); // light oak tint
+  static const Color gold = Color(0xFF9A6B3F); // warm oak‑brown accent
+  static const Color goldDark = Color(0xFF7D5530); // deeper oak
+  static const Color lightGray = Color(0xFF8A7E6D); // muted secondary text
+  static const Color lighterGray = Color(0xFF3A322A); // espresso primary text
+  static const Color veryLightGray = Color(0xFF5A5044);
 
-  // Status Colors
-  static const Color successGreen = Color(0xFF10B981);
-  static const Color warningOrange = Color(0xFFF97316);
-  static const Color errorRed = Color(0xFFEF4444);
-  static const Color infoBlue = Color(0xFF3B82F6);
+  // Status Colors (earthy)
+  static const Color successGreen = Color(0xFF4E9A51); // Normal stock (green)
+  static const Color warningOrange = Color(0xFFE08A3C); // warm amber
+  static const Color errorRed = Color(0xFFD9534F); // soft red (low stock)
+  static const Color infoBlue = Color(0xFF4A82C2); // muted blue (refill)
 
-  static ThemeData get darkTheme {
+  /// Soft, warm card shadow used across light‑oak surfaces.
+  static List<BoxShadow> get softShadow => [
+        BoxShadow(
+          color: const Color(0xFF8A6A45).withValues(alpha: 0.12),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  static ThemeData get darkTheme => lightOakTheme;
+
+  static ThemeData get lightOakTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: darkBg,
       primaryColor: gold,
-      
+
       // Color Scheme
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: gold,
-        onPrimary: darkBg,
+        onPrimary: Colors.white,
         secondary: goldDark,
-        onSecondary: darkBg,
+        onSecondary: Colors.white,
         surface: darkCharcoal,
         onSurface: lighterGray,
         error: errorRed,
@@ -40,7 +62,7 @@ class AppTheme {
 
       // AppBar
       appBarTheme: const AppBarTheme(
-        backgroundColor: darkCharcoal,
+        backgroundColor: darkBg,
         foregroundColor: gold,
         elevation: 0,
         centerTitle: false,

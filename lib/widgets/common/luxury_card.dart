@@ -29,23 +29,17 @@ class LuxuryCard extends StatelessWidget {
     final defaultShadow = showGlow
         ? [
             BoxShadow(
-              color: AppTheme.gold.withValues(alpha:0.15),
-              blurRadius: 20,
-              spreadRadius: 2,
+              color: AppTheme.gold.withValues(alpha:0.18),
+              blurRadius: 22,
+              spreadRadius: 1,
             ),
             BoxShadow(
-              color: Colors.black.withValues(alpha:0.3),
-              blurRadius: 8,
+              color: const Color(0xFF8A6A45).withValues(alpha:0.10),
+              blurRadius: 10,
               spreadRadius: 0,
             ),
           ]
-        : [
-            BoxShadow(
-              color: Colors.black.withValues(alpha:0.25),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ];
+        : AppTheme.softShadow;
 
     return GestureDetector(
       onTap: onTap,

@@ -37,7 +37,7 @@ class _MobileFrame extends StatelessWidget {
 
     // On wider screens, show a centered phone-shaped frame.
     return Scaffold(
-      backgroundColor: const Color(0xFF111111),
+      backgroundColor: const Color(0xFFE7E0D4), // warm light surround
       body: Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
@@ -49,12 +49,12 @@ class _MobileFrame extends StatelessWidget {
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha:0.6),
+                  color: const Color(0xFF6B5740).withValues(alpha: 0.25),
                   blurRadius: 30,
                   offset: const Offset(0, 12),
                 ),
               ],
-              border: Border.all(color: Colors.white12, width: 1),
+              border: Border.all(color: const Color(0x14000000), width: 1),
             ),
             child: MediaQuery(
               // Tell the app it's running on a phone-sized viewport.
