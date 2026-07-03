@@ -47,17 +47,27 @@ class LuxuryCard extends StatelessWidget {
             ),
           ];
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor ?? AppTheme.darkCharcoal,
-          borderRadius: borderRadius ?? BorderRadius.circular(16),
-          border:
-              border ?? Border.all(color: AppTheme.darkerCharcoal, width: 1),
-          boxShadow: boxShadow ?? defaultShadow,
+    final radius = borderRadius ?? BorderRadius.circular(16);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? AppTheme.darkCharcoal,
+        borderRadius: radius,
+        border: border ?? Border.all(color: AppTheme.darkerCharcoal, width: 1),
+        boxShadow: boxShadow ?? defaultShadow,
+      ),
+      // Material + InkWell give the card a proper ripple on tap.
+      // Transparent so the Container's background/border still show through.
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          splashColor: AppTheme.gold.withValues(alpha: 0.10),
+          highlightColor: AppTheme.gold.withValues(alpha: 0.05),
+          child: Padding(padding: padding, child: child),
         ),
-        child: Padding(padding: padding, child: child),
       ),
     );
   }

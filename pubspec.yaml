@@ -40,6 +40,15 @@ dependencies:
   # call `Firebase.initializeApp(...)` from main.dart before runApp.
   firebase_core: ^3.6.0
 
+  # Charts for the Progress & Analytics screen.
+  fl_chart: ^0.69.0
+
+  # Local persistence so inventory/shopping changes survive restarts.
+  shared_preferences: ^2.3.2
+
+  # Poppins typography for the warm light design system.
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

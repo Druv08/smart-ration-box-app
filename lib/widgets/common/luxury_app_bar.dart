@@ -27,7 +27,7 @@ class LuxuryAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation,
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppTheme.lighterGray),
+              icon: Icon(Icons.arrow_back, color: AppTheme.lighterGray),
               onPressed: onBackPressed ?? () => Navigator.pop(context),
             )
           : null,
@@ -37,7 +37,7 @@ class LuxuryAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.lighterGray,
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -46,7 +46,7 @@ class LuxuryAppBar extends StatelessWidget implements PreferredSizeWidget {
           if (subtitle != null)
             Text(
               subtitle!,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.lightGray,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,

@@ -40,4 +40,32 @@ class ShoppingItem {
       notes: notes,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'category': category,
+        'quantity': quantity,
+        'unit': unit,
+        'estimatedCost': estimatedCost,
+        'isPurchased': isPurchased,
+        'addedDate': addedDate.toIso8601String(),
+        'purchasedDate': purchasedDate?.toIso8601String(),
+        'notes': notes,
+      };
+
+  factory ShoppingItem.fromJson(Map<String, dynamic> json) => ShoppingItem(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        category: json['category'] as String,
+        quantity: (json['quantity'] as num).toDouble(),
+        unit: json['unit'] as String,
+        estimatedCost: (json['estimatedCost'] as num).toDouble(),
+        isPurchased: json['isPurchased'] as bool? ?? false,
+        addedDate: DateTime.parse(json['addedDate'] as String),
+        purchasedDate: json['purchasedDate'] == null
+            ? null
+            : DateTime.parse(json['purchasedDate'] as String),
+        notes: json['notes'] as String?,
+      );
 }

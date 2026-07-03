@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../data/mock_data.dart';
-import '../widgets/common/luxury_card.dart';
+import '../models/inventory_item.dart';
+import '../services/local_store.dart';
+import '../widgets/common/empty_state.dart';
+import '../widgets/common/item_card.dart';
+import '../widgets/inventory/add_inventory_sheet.dart';
+import 'item_details_screen.dart';
 
-/// Family Inventory screen showing all household containers
+/// Items screen — search, category filter, and the full inventory list.
 class FamilyInventoryScreen extends StatefulWidget {
   const FamilyInventoryScreen({super.key});
 
@@ -12,213 +17,216 @@ class FamilyInventoryScreen extends StatefulWidget {
 }
 
 class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
-  String selectedFilter = 'All';
+  List<InventoryItem> _items = [];
+  String _search = '';
+  String _category = 'All';
+
+  static const _currentUser = MockData.currentUserName;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final saved = await LocalStore.loadInventory();
+    if (!mounted) return;
+    setState(() => _items = saved ?? List.of(MockData.inventoryItems));
+    if (saved == null) LocalStore.saveInventory(_items);
+  }
+
+  List<String> get _categories {
+    final set = _items.map((e) => e.category).toSet().toList()..sort();
+    return ['All', ...set];
+  }
+
+  List<InventoryItem> get _filtered {
+    return _items.where((item) {
+      final matchesCategory = _category == 'All' || item.category == _category;
+      final matchesSearch =
+          _search.isEmpty || item.name.toLowerCase().contains(_search);
+      return matchesCategory && matchesSearch;
+    }).toList();
+  }
+
+  Future<void> _addItem() async {
+    final item = await AddInventorySheet.show(context);
+    if (item == null) return;
+    setState(() => _items.add(item));
+    LocalStore.saveInventory(_items);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${item.name} added to inventory')),
+    );
+  }
+
+  /// Claims responsibility for [item] under the current user, persists, and
+  /// returns the updated item.
+  InventoryItem _claim(InventoryItem item) {
+    final index = _items.indexOf(item);
+    final updated = item.copyWith(claimedBy: _currentUser);
+    if (index != -1) {
+      setState(() => _items[index] = updated);
+      LocalStore.saveInventory(_items);
+    }
+    return updated;
+  }
+
+  void _openDetails(InventoryItem item) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ItemDetailsScreen(
+          item: item,
+          currentUser: _currentUser,
+          onClaim: item.isClaimed ? null : () async => _claim(item),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final items = MockData.inventoryItems;
-    final filtered = selectedFilter == 'All'
-        ? items
-        : items.where((i) => i.status == selectedFilter).toList();
-
+    final filtered = _filtered;
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: AppTheme.bg,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: AppTheme.darkCharcoal,
-              elevation: 0,
-              title: const Text(
-                'Family Inventory',
-                style: TextStyle(
-                  color: AppTheme.lighterGray,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              backgroundColor: AppTheme.bg,
               floating: true,
               snap: true,
+              title: const Text('Items'),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: _AddButton(onTap: _addItem),
+                ),
+              ],
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Filter Chips
-                  SizedBox(
-                    height: 40,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: ['All', 'In Stock', 'Low Stock']
-                          .map(
-                            (filter) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(filter),
-                                selected: selectedFilter == filter,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    selectedFilter = filter;
-                                  });
-                                },
-                                backgroundColor: AppTheme.darkerCharcoal,
-                                selectedColor: AppTheme.gold.withValues(alpha:0.2),
-                                side: BorderSide(
-                                  color: selectedFilter == filter
-                                      ? AppTheme.gold
-                                      : AppTheme.darkerCharcoal,
-                                ),
-                                labelStyle: TextStyle(
-                                  color: selectedFilter == filter
-                                      ? AppTheme.gold
-                                      : AppTheme.lightGray,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: TextField(
+                  onChanged: (v) => setState(() => _search = v.toLowerCase()),
+                  decoration: const InputDecoration(
+                    hintText: 'Search items',
+                    prefixIcon: Icon(Icons.search_rounded),
                   ),
-                  const SizedBox(height: 16),
-                  ...filtered.map((item) {
-                    final percent = (item.quantity / item.capacity * 100).clamp(
-                      0,
-                      100,
-                    );
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: LuxuryCard(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.name,
-                                        style: const TextStyle(
-                                          color: AppTheme.lighterGray,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        item.category,
-                                        style: const TextStyle(
-                                          color: AppTheme.lightGray,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.isLowStock
-                                        ? AppTheme.warningOrange.withValues(alpha:
-                                            0.15,
-                                          )
-                                        : AppTheme.successGreen.withValues(alpha:
-                                            0.15,
-                                          ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    item.status,
-                                    style: TextStyle(
-                                      color: item.isLowStock
-                                          ? AppTheme.warningOrange
-                                          : AppTheme.successGreen,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${item.quantity}${item.unit}',
-                                  style: const TextStyle(
-                                    color: AppTheme.gold,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  '/ ${item.capacity}${item.unit}',
-                                  style: const TextStyle(
-                                    color: AppTheme.lightGray,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: percent / 100,
-                                minHeight: 6,
-                                backgroundColor: AppTheme.darkerCharcoal,
-                                valueColor: AlwaysStoppedAnimation(
-                                  item.isLowStock
-                                      ? AppTheme.warningOrange
-                                      : AppTheme.gold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Owner: ${item.owner}',
-                                  style: const TextStyle(
-                                    color: AppTheme.lightGray,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                Text(
-                                  item.location,
-                                  style: const TextStyle(
-                                    color: AppTheme.lightGray,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ]),
+                ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 44,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _categories.length,
+                  separatorBuilder: (context, i) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) {
+                    final cat = _categories[i];
+                    final selected = cat == _category;
+                    return _CategoryChip(
+                      label: cat,
+                      selected: selected,
+                      onTap: () => setState(() => _category = cat),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            if (filtered.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyState(
+                  icon: Icons.inventory_2_rounded,
+                  title: 'No items found',
+                  subtitle: _search.isNotEmpty
+                      ? 'Try a different search.'
+                      : 'Add your first item to get started.',
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                sliver: SliverList.separated(
+                  itemCount: filtered.length,
+                  separatorBuilder: (context, i) => const SizedBox(height: 14),
+                  itemBuilder: (_, i) {
+                    final item = filtered[i];
+                    return ItemCard(
+                      item: item,
+                      currentUser: _currentUser,
+                      onTap: () => _openDetails(item),
+                      onClaim: item.isClaimed ? null : () => _claim(item),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.gold,
-        onPressed: () {
-          // Add new item
-        },
-        child: const Icon(Icons.add, color: AppTheme.darkBg),
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppTheme.primary,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: const Padding(
+          padding: EdgeInsets.all(8),
+          child: Icon(Icons.add_rounded, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.primary : AppTheme.card,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: selected ? AppTheme.primary : AppTheme.divider,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTheme.label(
+            13,
+            color: selected ? Colors.white : AppTheme.textSecondary,
+          ),
+        ),
       ),
     );
   }

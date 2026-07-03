@@ -9,6 +9,10 @@ import '../models/analytics_data.dart';
 /// (Firebase or ESP32) when hardware is connected — see
 /// `lib/services/box_data_source.dart`.
 class MockData {
+  /// The signed-in user (matches the admin family member). Used to attribute
+  /// item claims and phrase the "You will refill this" label.
+  static const String currentUserName = 'Raj Kumar';
+
   // ============ Smart Box Data ============
   // Each box below demonstrates a different alert state so all five
   // dashboard alert types (All Good, Low Stock, Battery Low,

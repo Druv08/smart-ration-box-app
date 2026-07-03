@@ -8,13 +8,20 @@ class SmartRationBoxApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      // Force a phone-sized frame when viewed in a wide browser window.
-      builder: (context, child) => _MobileFrame(child: child!),
-      home: const HomeScreen(),
+    // Rebuild the whole app whenever the appearance mode is toggled
+    // (e.g. from Settings → Appearance → Theme).
+    return ValueListenableBuilder<AppThemeMode>(
+      valueListenable: AppTheme.mode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.themeData,
+          // Force a phone-sized frame when viewed in a wide browser window.
+          builder: (context, child) => _MobileFrame(child: child!),
+          home: const HomeScreen(),
+        );
+      },
     );
   }
 }

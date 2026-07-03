@@ -1,6 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../data/mock_data.dart';
+import '../models/analytics_data.dart';
 import '../widgets/common/luxury_card.dart';
 
 /// Progress screen showing consumption trends and analytics
@@ -33,7 +35,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             SliverAppBar(
               backgroundColor: AppTheme.darkCharcoal,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'Progress & Analytics',
                 style: TextStyle(
                   color: AppTheme.lighterGray,
@@ -120,7 +122,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   // Consumption Chart (Simple Bar Chart)
                   Text(
                     'Daily Consumption Trend',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -128,68 +130,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   ),
                   const SizedBox(height: 12),
                   LuxuryCard(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
                     child: SizedBox(
-                      height: 200,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: currentStats.dailyData
-                            .take(7)
-                            .toList()
-                            .asMap()
-                            .entries
-                            .map((e) {
-                              final day = [
-                                'S',
-                                'M',
-                                'T',
-                                'W',
-                                'T',
-                                'F',
-                                'S',
-                              ][e.key];
-                              final value = e.value.consumption;
-                              final maxValue = currentStats.dailyData.isNotEmpty
-                                  ? currentStats.dailyData
-                                        .map((d) => d.consumption)
-                                        .reduce((a, b) => a > b ? a : b)
-                                  : 0.5;
-
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${(value).toStringAsFixed(1)}kg',
-                                    style: const TextStyle(
-                                      color: AppTheme.lightGray,
-                                      fontSize: 9,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    width: 20,
-                                    height: 100 * (value / maxValue),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.gold.withValues(alpha:0.7),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4),
-                                        topRight: Radius.circular(4),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    day,
-                                    style: const TextStyle(
-                                      color: AppTheme.lightGray,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            })
-                            .toList(),
+                      height: 220,
+                      child: _ConsumptionChart(
+                        data: currentStats.dailyData.take(7).toList(),
                       ),
                     ),
                   ),
@@ -198,7 +143,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   // Refill History
                   Text(
                     'Refill History',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -231,7 +176,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 children: [
                                   Text(
                                     entry.containerName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lighterGray,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
@@ -240,7 +185,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     _formatDate(entry.date),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lightGray,
                                       fontSize: 11,
                                     ),
@@ -250,8 +195,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             ),
                             Text(
                               '+${entry.amount} kg',
-                              style: const TextStyle(
-                                color: AppTheme.gold,
+                              style: TextStyle(
+                                color: AppTheme.goldText,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),
@@ -276,6 +221,133 @@ class _ProgressScreenState extends State<ProgressScreen> {
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
     return '$diff days ago';
+  }
+}
+
+/// Animated bar chart of daily consumption, backed by fl_chart.
+/// Shows a y-axis with kg gridlines, real weekday labels, and a
+/// tap-to-reveal value tooltip on each bar.
+class _ConsumptionChart extends StatelessWidget {
+  final List<AnalyticsData> data;
+
+  const _ConsumptionChart({required this.data});
+
+  static const _weekdayLetters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.isEmpty) {
+      return Center(
+        child: Text(
+          'No consumption data',
+          style: TextStyle(color: AppTheme.lightGray, fontSize: 12),
+        ),
+      );
+    }
+
+    final maxConsumption =
+        data.map((d) => d.consumption).reduce((a, b) => a > b ? a : b);
+    // Round the axis ceiling up to a tidy value with a little headroom.
+    final maxY = ((maxConsumption * 1.25) * 10).ceilToDouble() / 10;
+    final interval = maxY <= 0 ? 0.1 : maxY / 4;
+
+    return BarChart(
+      BarChartData(
+        maxY: maxY <= 0 ? 0.5 : maxY,
+        alignment: BarChartAlignment.spaceAround,
+        barTouchData: BarTouchData(
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => AppTheme.darkCharcoal,
+            tooltipRoundedRadius: 8,
+            getTooltipItem: (group, groupIdx, rod, rodIdx) => BarTooltipItem(
+              '${rod.toY.toStringAsFixed(2)} kg',
+              const TextStyle(
+                color: AppTheme.gold,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: interval,
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: AppTheme.darkerCharcoal,
+            strokeWidth: 1,
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 34,
+              interval: interval,
+              getTitlesWidget: (value, meta) {
+                if (value > meta.max) return const SizedBox.shrink();
+                return Text(
+                  value.toStringAsFixed(1),
+                  style: TextStyle(color: AppTheme.lightGray, fontSize: 10),
+                );
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                final i = value.toInt();
+                if (i < 0 || i >= data.length) {
+                  return const SizedBox.shrink();
+                }
+                final letter = _weekdayLetters[(data[i].date.weekday - 1) % 7];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    letter,
+                    style: TextStyle(color: AppTheme.lightGray, fontSize: 11),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        barGroups: [
+          for (var i = 0; i < data.length; i++)
+            BarChartGroupData(
+              x: i,
+              barRods: [
+                BarChartRodData(
+                  toY: data[i].consumption,
+                  width: 18,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(4),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      AppTheme.goldDark,
+                      AppTheme.gold,
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+      duration: const Duration(milliseconds: 650),
+      curve: Curves.easeOutCubic,
+    );
   }
 }
 
@@ -304,7 +376,7 @@ class _MetricsRow extends StatelessWidget {
               children: [
                 Text(
                   label1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.lightGray,
                     fontSize: 11,
                   ),
@@ -312,8 +384,8 @@ class _MetricsRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   value1,
-                  style: const TextStyle(
-                    color: AppTheme.gold,
+                  style: TextStyle(
+                    color: AppTheme.goldText,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -331,7 +403,7 @@ class _MetricsRow extends StatelessWidget {
               children: [
                 Text(
                   label2,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.lightGray,
                     fontSize: 11,
                   ),
@@ -339,8 +411,8 @@ class _MetricsRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   value2,
-                  style: const TextStyle(
-                    color: AppTheme.gold,
+                  style: TextStyle(
+                    color: AppTheme.goldText,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
