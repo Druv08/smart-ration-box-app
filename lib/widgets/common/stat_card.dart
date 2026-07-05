@@ -58,7 +58,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.lightGray,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -84,7 +84,7 @@ class StatCard extends StatelessWidget {
                 if (suffix != null)
                   Text(
                     suffix!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lightGray,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

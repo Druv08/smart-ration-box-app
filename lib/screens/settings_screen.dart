@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../config/theme_controller.dart';
 import '../data/mock_data.dart';
 import '../widgets/common/luxury_card.dart';
 
@@ -26,7 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SliverAppBar(
               backgroundColor: AppTheme.darkCharcoal,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'Settings',
                 style: TextStyle(
                   color: AppTheme.lighterGray,
@@ -57,7 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 color: AppTheme.gold.withValues(alpha:0.2),
                                 borderRadius: BorderRadius.circular(25),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.person,
                                 color: AppTheme.gold,
                                 size: 28,
@@ -68,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Raj Kumar',
                                     style: TextStyle(
                                       color: AppTheme.lighterGray,
@@ -87,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ],
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.arrow_forward_ios,
                               color: AppTheme.gold,
                               size: 16,
@@ -165,7 +166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 color: AppTheme.gold.withValues(alpha:0.15),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.person_outline,
                                 color: AppTheme.gold,
                                 size: 20,
@@ -178,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 children: [
                                   Text(
                                     member.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lighterGray,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12,
@@ -186,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                   Text(
                                     member.role,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lightGray,
                                       fontSize: 11,
                                     ),
@@ -197,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             PopupMenuButton(
                               color: AppTheme.darkCharcoal,
                               itemBuilder: (_) => [
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   child: Text(
                                     'Edit',
                                     style: TextStyle(
@@ -206,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   ),
                                 ),
                                 if (!member.isAdmin)
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     child: Text(
                                       'Remove',
                                       style: TextStyle(
@@ -223,14 +224,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }),
                   const SizedBox(height: 24),
 
-                  // Theme Settings
+                  // Theme Settings — switch between Light Oak (default) and
+                  // the optional Premium Dark luxury theme. The toggle drives
+                  // ThemeController, which rebuilds the whole app (see app.dart).
                   _SectionTitle(title: 'Appearance'),
                   const SizedBox(height: 12),
-                  _SettingItem(
-                    icon: Icons.dark_mode,
-                    label: 'Theme',
-                    value: 'Dark (Premium)',
-                    onTap: () {},
+                  _SettingToggle(
+                    icon: ThemeController.instance.isPremiumDark
+                        ? Icons.dark_mode
+                        : Icons.light_mode,
+                    label: 'Premium Dark Mode',
+                    value: ThemeController.instance.isPremiumDark,
+                    onChanged: (val) {
+                      ThemeController.instance.setPremiumDark(val);
+                    },
                   ),
                   const SizedBox(height: 24),
 
@@ -290,7 +297,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppTheme.lighterGray,
         fontSize: 14,
         fontWeight: FontWeight.w600,
@@ -330,7 +337,7 @@ class _SettingToggle extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.lighterGray,
                 fontWeight: FontWeight.w500,
                 fontSize: 13,
@@ -386,7 +393,7 @@ class _SettingItem extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontWeight: FontWeight.w500,
                       fontSize: 13,
@@ -395,7 +402,7 @@ class _SettingItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lightGray,
                       fontSize: 11,
                     ),
@@ -403,7 +410,7 @@ class _SettingItem extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: AppTheme.gold, size: 14),
+            Icon(Icons.arrow_forward_ios, color: AppTheme.gold, size: 14),
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/theme.dart';
+import '../config/theme_controller.dart';
 import 'dashboard_screen.dart';
 import 'family_inventory_screen.dart';
 import 'shopping_list_screen.dart';
@@ -26,9 +27,32 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Rebuild the current page (with fresh colours) when the theme is toggled,
+    // without losing the selected tab.
+    ThemeController.instance.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    ThemeController.instance.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      // The KeyedSubtree forces the active page to rebuild from scratch when
+      // the theme changes, so widgets re-read AppTheme's palette-backed colours.
+      body: KeyedSubtree(
+        key: ValueKey(ThemeController.instance.isPremiumDark),
+        child: _screens[_currentIndex],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

@@ -32,7 +32,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
             SliverAppBar(
               backgroundColor: AppTheme.darkCharcoal,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'Shopping List',
                 style: TextStyle(
                   color: AppTheme.lighterGray,
@@ -57,7 +57,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                       ),
                       child: Text(
                         '₹ ${(pending.fold<double>(0, (sum, item) => sum + item.estimatedCost)).toStringAsFixed(0)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.gold,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -87,7 +87,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               size: 40,
                             ),
                             const SizedBox(height: 8),
-                            const Text(
+                            Text(
                               'All items purchased!',
                               style: TextStyle(
                                 color: AppTheme.lighterGray,
@@ -122,7 +122,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                   children: [
                                     Text(
                                       item.displayName,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: AppTheme.lighterGray,
                                         fontWeight: FontWeight.w500,
                                         fontSize: 13,
@@ -146,7 +146,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                           ),
                                           child: Text(
                                             item.category,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               color: AppTheme.gold,
                                               fontSize: 10,
                                             ),
@@ -155,7 +155,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                         const SizedBox(width: 8),
                                         Text(
                                           '₹ ${item.estimatedCost}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: AppTheme.lightGray,
                                             fontSize: 11,
                                           ),
@@ -168,7 +168,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               PopupMenuButton(
                                 color: AppTheme.darkCharcoal,
                                 itemBuilder: (_) => [
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     child: Text(
                                       'Edit',
                                       style: TextStyle(
@@ -176,7 +176,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                       ),
                                     ),
                                   ),
-                                  const PopupMenuItem(
+                                  PopupMenuItem(
                                     child: Text(
                                       'Delete',
                                       style: TextStyle(
@@ -207,7 +207,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.check_circle,
                                 color: AppTheme.successGreen,
                                 size: 18,
@@ -216,7 +216,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               Expanded(
                                 child: Text(
                                   item.displayName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.lightGray,
                                     fontSize: 12,
                                     decoration: TextDecoration.lineThrough,
@@ -240,7 +240,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         onPressed: () {
           // Add new item
         },
-        child: const Icon(Icons.add, color: AppTheme.darkBg),
+        child: Icon(Icons.add, color: AppTheme.darkBg),
       ),
     );
   }
@@ -259,7 +259,7 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.lighterGray,
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -273,7 +273,7 @@ class _SectionHeader extends StatelessWidget {
           ),
           child: Text(
             '$count',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.gold,
               fontWeight: FontWeight.w600,
               fontSize: 12,

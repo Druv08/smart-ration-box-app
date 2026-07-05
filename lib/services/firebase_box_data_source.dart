@@ -9,7 +9,23 @@ import 'box_data_source.dart';
 ///   2. Run `flutterfire configure` to generate `firebase_options.dart`.
 ///   3. Call `Firebase.initializeApp(...)` from `main.dart` before `runApp`.
 ///   4. Replace the methods below with real Firestore queries on a
-///      `boxes` collection keyed by container id.
+///      `boxes` collection keyed by container id, mapping each document with
+///      `SmartBoxData.fromMap(doc.id, doc.data())`. Writes use `box.toMap()`.
+///
+/// The wire format (field names + types) is documented in
+/// `docs/ESP32_FIREBASE_DATA_FORMAT.md` and implemented by
+/// [SmartBoxData.fromMap] / [SmartBoxData.toMap]. Example Firestore read:
+///
+/// ```dart
+/// Stream<List<SmartBoxData>> watchBoxes() {
+///   return FirebaseFirestore.instance
+///       .collection('boxes')
+///       .snapshots()
+///       .map((snap) => snap.docs
+///           .map((d) => SmartBoxData.fromMap(d.id, d.data()))
+///           .toList());
+/// }
+/// ```
 class FirebaseBoxDataSource implements BoxDataSource {
   const FirebaseBoxDataSource();
 
