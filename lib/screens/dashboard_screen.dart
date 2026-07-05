@@ -64,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: AppTheme.darkBg,
       body: SafeArea(
         child: primary == null
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(color: AppTheme.gold),
               )
             : ListView(
@@ -127,12 +127,12 @@ class _GreetingHero extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.menu_rounded, color: AppTheme.lighterGray),
+            Icon(Icons.menu_rounded, color: AppTheme.lighterGray),
             const Spacer(),
             Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.notifications_none_rounded,
+                Icon(Icons.notifications_none_rounded,
                     color: AppTheme.lighterGray),
                 Positioned(
                   right: 0,
@@ -140,7 +140,7 @@ class _GreetingHero extends StatelessWidget {
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppTheme.gold,
                       shape: BoxShape.circle,
                     ),
@@ -168,7 +168,7 @@ class _GreetingHero extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '$name!',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -315,7 +315,7 @@ class _StatusCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.lighterGray,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -363,7 +363,7 @@ class _ItemCard extends StatelessWidget {
                   color: AppTheme.gold.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.inventory_2_rounded,
+                child: Icon(Icons.inventory_2_rounded,
                     color: AppTheme.gold, size: 22),
               ),
               const SizedBox(width: 12),
@@ -373,7 +373,7 @@ class _ItemCard extends StatelessWidget {
                   children: [
                     Text(
                       data.containerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.lighterGray,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
@@ -408,7 +408,7 @@ class _ItemCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
+              Icon(Icons.chevron_right_rounded,
                   color: AppTheme.lightGray, size: 20),
             ],
           ),
@@ -432,7 +432,7 @@ class _ItemCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.hourglass_empty_rounded,
+                  Icon(Icons.hourglass_empty_rounded,
                       color: AppTheme.errorRed, size: 14),
                   const SizedBox(width: 6),
                   Expanded(
@@ -514,7 +514,7 @@ class _RecentActivity extends StatelessWidget {
               decoration: BoxDecoration(
                 border: i == recent.length - 1
                     ? null
-                    : const Border(
+                    : Border(
                         bottom: BorderSide(
                             color: AppTheme.darkerCharcoal, width: 1),
                       ),
@@ -527,7 +527,7 @@ class _RecentActivity extends StatelessWidget {
                       color: AppTheme.successGreen.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.autorenew_rounded,
+                    child: Icon(Icons.autorenew_rounded,
                         color: AppTheme.successGreen, size: 16),
                   ),
                   const SizedBox(width: 12),
@@ -537,7 +537,7 @@ class _RecentActivity extends StatelessWidget {
                       children: [
                         Text(
                           '${recent[i].containerName} was refilled',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.lighterGray,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -579,7 +579,7 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.lighterGray,
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -590,7 +590,7 @@ class _SectionHeader extends StatelessWidget {
             onTap: onAction,
             child: Text(
               actionLabel!,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.gold,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

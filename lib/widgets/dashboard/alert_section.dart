@@ -49,7 +49,7 @@ class AlertSection extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         style.message,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.lighterGray,
                           fontSize: 12,
                         ),
@@ -68,35 +68,35 @@ class AlertSection extends StatelessWidget {
   _AlertStyle _styleFor(AlertState state) {
     switch (state) {
       case AlertState.allGood:
-        return const _AlertStyle(
+        return _AlertStyle(
           title: 'All Good',
           message: 'Everything is running normally.',
           color: AppTheme.successGreen,
           icon: Icons.check_circle_rounded,
         );
       case AlertState.lowStock:
-        return const _AlertStyle(
+        return _AlertStyle(
           title: 'Low Stock',
           message: 'Stock level is below 25%. Plan a refill soon.',
           color: AppTheme.warningOrange,
           icon: Icons.warning_rounded,
         );
       case AlertState.batteryLow:
-        return const _AlertStyle(
+        return _AlertStyle(
           title: 'Battery Low',
           message: 'Device battery is under 20%. Recharge soon.',
           color: AppTheme.errorRed,
           icon: Icons.battery_alert_rounded,
         );
       case AlertState.deviceOffline:
-        return const _AlertStyle(
+        return _AlertStyle(
           title: 'Device Offline',
           message: 'Smart Ration Box is not reachable right now.',
           color: AppTheme.errorRed,
           icon: Icons.wifi_off_rounded,
         );
       case AlertState.refillDetected:
-        return const _AlertStyle(
+        return _AlertStyle(
           title: 'Refill Detected',
           message: 'A refill was detected on the container.',
           color: AppTheme.infoBlue,

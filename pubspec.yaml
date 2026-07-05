@@ -40,6 +40,9 @@ dependencies:
   # call `Firebase.initializeApp(...)` from main.dart before runApp.
   firebase_core: ^3.6.0
 
+  # Poppins typography for the warm light oak / premium dark design.
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

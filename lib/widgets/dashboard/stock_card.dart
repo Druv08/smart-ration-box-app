@@ -33,7 +33,7 @@ class StockCard extends StatelessWidget {
                   children: [
                     Text(
                       data.containerName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.gold,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -72,7 +72,7 @@ class StockCard extends StatelessWidget {
           // Stock Level Display
           Text(
             '${data.stockPercentage.toStringAsFixed(0)}% full',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.lighterGray,
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class StockCard extends StatelessWidget {
                   color: AppTheme.warningOrange.withValues(alpha:0.3),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 '⚠ Low Stock - Plan Refill',
                 style: TextStyle(
                   color: AppTheme.warningOrange,

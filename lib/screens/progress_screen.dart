@@ -33,7 +33,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
             SliverAppBar(
               backgroundColor: AppTheme.darkCharcoal,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'Progress & Analytics',
                 style: TextStyle(
                   color: AppTheme.lighterGray,
@@ -120,7 +120,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   // Consumption Chart (Simple Bar Chart)
                   Text(
                     'Daily Consumption Trend',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -161,7 +161,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 children: [
                                   Text(
                                     '${(value).toStringAsFixed(1)}kg',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lightGray,
                                       fontSize: 9,
                                     ),
@@ -181,7 +181,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                   const SizedBox(height: 6),
                                   Text(
                                     day,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lightGray,
                                       fontSize: 11,
                                     ),
@@ -198,7 +198,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   // Refill History
                   Text(
                     'Refill History',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.lighterGray,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -218,7 +218,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 color: AppTheme.successGreen.withValues(alpha:0.15),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.local_shipping,
                                 color: AppTheme.successGreen,
                                 size: 18,
@@ -231,7 +231,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 children: [
                                   Text(
                                     entry.containerName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lighterGray,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
@@ -240,7 +240,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     _formatDate(entry.date),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppTheme.lightGray,
                                       fontSize: 11,
                                     ),
@@ -250,7 +250,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                             ),
                             Text(
                               '+${entry.amount} kg',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppTheme.gold,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
@@ -304,7 +304,7 @@ class _MetricsRow extends StatelessWidget {
               children: [
                 Text(
                   label1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.lightGray,
                     fontSize: 11,
                   ),
@@ -312,7 +312,7 @@ class _MetricsRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   value1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.gold,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -331,7 +331,7 @@ class _MetricsRow extends StatelessWidget {
               children: [
                 Text(
                   label2,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.lightGray,
                     fontSize: 11,
                   ),
@@ -339,7 +339,7 @@ class _MetricsRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   value2,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.gold,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

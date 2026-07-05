@@ -28,8 +28,8 @@ class ItemDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.darkBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.gold),
-        title: const Text(
+        iconTheme: IconThemeData(color: AppTheme.gold),
+        title: Text(
           'Container Details',
           style: TextStyle(
             color: AppTheme.lighterGray,
@@ -48,11 +48,11 @@ class ItemDetailsScreen extends StatelessWidget {
             if (data == null) {
               // Either still loading the first snapshot, or the id is unknown.
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
+                return Center(
                   child: CircularProgressIndicator(color: AppTheme.gold),
                 );
               }
-              return const Center(
+              return Center(
                 child: Text(
                   'Container not found.',
                   style: TextStyle(color: AppTheme.lightGray),
@@ -85,7 +85,7 @@ class ItemDetailsScreen extends StatelessWidget {
       children: [
         Text(
           data.containerName,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.lighterGray,
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -108,7 +108,7 @@ class ItemDetailsScreen extends StatelessWidget {
         const SizedBox(height: 24),
         const _SectionHeader(title: 'Mock Hardware Simulation'),
         const SizedBox(height: 4),
-        const Text(
+        Text(
           'Fake ESP32 sensor events to preview how alerts change. '
           'These controls disappear once real hardware is connected.',
           style: TextStyle(color: AppTheme.lightGray, fontSize: 12),
@@ -194,7 +194,7 @@ class _DetailRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: isLast
             ? null
-            : const Border(
+            : Border(
                 bottom: BorderSide(color: AppTheme.darkerCharcoal, width: 1),
               ),
       ),
@@ -203,7 +203,7 @@ class _DetailRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: AppTheme.lightGray, fontSize: 13),
+            style: TextStyle(color: AppTheme.lightGray, fontSize: 13),
           ),
           Text(
             value,
@@ -319,7 +319,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppTheme.lighterGray,
         fontSize: 16,
         fontWeight: FontWeight.w600,

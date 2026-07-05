@@ -29,7 +29,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
             SliverAppBar(
               backgroundColor: AppTheme.darkCharcoal,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'Family Inventory',
                 style: TextStyle(
                   color: AppTheme.lighterGray,
@@ -102,7 +102,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                                     children: [
                                       Text(
                                         item.name,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppTheme.lighterGray,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
@@ -111,7 +111,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                                       const SizedBox(height: 2),
                                       Text(
                                         item.category,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppTheme.lightGray,
                                           fontSize: 11,
                                         ),
@@ -153,7 +153,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                               children: [
                                 Text(
                                   '${item.quantity}${item.unit}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.gold,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
@@ -161,7 +161,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                                 ),
                                 Text(
                                   '/ ${item.capacity}${item.unit}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.lightGray,
                                     fontSize: 12,
                                   ),
@@ -188,14 +188,14 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
                               children: [
                                 Text(
                                   'Owner: ${item.owner}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.lightGray,
                                     fontSize: 11,
                                   ),
                                 ),
                                 Text(
                                   item.location,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.lightGray,
                                     fontSize: 11,
                                   ),
@@ -218,7 +218,7 @@ class _FamilyInventoryScreenState extends State<FamilyInventoryScreen> {
         onPressed: () {
           // Add new item
         },
-        child: const Icon(Icons.add, color: AppTheme.darkBg),
+        child: Icon(Icons.add, color: AppTheme.darkBg),
       ),
     );
   }
