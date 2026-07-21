@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../config/theme.dart';
 import '../models/smart_box_data.dart';
 import '../services/mock_box_data_source.dart';
+import '../utils/item_images.dart';
+import '../widgets/common/item_image.dart';
 import '../widgets/common/luxury_card.dart';
 import '../widgets/dashboard/alert_section.dart';
 import '../widgets/dashboard/device_info_grid.dart';
@@ -83,6 +85,14 @@ class ItemDetailsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
+        // Item photo (falls back to a themed icon if the image can't load).
+        ItemImage(
+          url: imageUrlForItem(data.containerName),
+          height: 200,
+          width: double.infinity,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        const SizedBox(height: 16),
         Text(
           data.containerName,
           style: TextStyle(

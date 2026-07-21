@@ -1,0 +1,25 @@
+Item photos — sources & licensing
+==================================
+
+All images were sourced from Wikimedia Commons and are used under their
+respective Creative Commons / public-domain licenses. Each was visually
+verified to depict the correct ingredient before bundling.
+
+rice.jpg     — "Raw Basmati Rice", Wikimedia Commons
+chana.jpg    — "Ordinary chickpeas in a ceramic bowl", Wikimedia Commons
+masoor.jpg   — "Split Red Lentil", Wikimedia Commons
+moong.jpg    — "A cup of dry mung beans (moong dal)", Wikimedia Commons
+urad.jpg     — "Black gram", Wikimedia Commons
+dal.jpg      — "3 types of lentil", Wikimedia Commons
+oil.jpg      — "Peanut oil bottle", Wikimedia Commons
+milk.jpg     — "Milk bottle", Wikimedia Commons
+chili.jpg    — "Red chili pepper powder", Wikimedia Commons
+turmeric.jpg — "Kunyit Bubuk (turmeric powder)", Wikimedia Commons
+sugar.jpg    — "Granulated White Sugar with Large Crystals", Wikimedia Commons
+flour.jpg    — "All-Purpose Flour", Wikimedia Commons
+wheat.jpg    — "Wheatfield with close-up of kernels", Wikimedia Commons
+salt.jpg     — "Salt shaker on white background", Wikimedia Commons
+
+For a production release, confirm each file's exact license/author on
+Wikimedia Commons and include attribution as required, or replace with your
+own brand photography (e.g. specific oil/milk brands).

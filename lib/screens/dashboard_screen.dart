@@ -6,6 +6,8 @@ import '../data/mock_data.dart';
 import '../models/smart_box_data.dart';
 import '../services/box_data_source.dart';
 import '../services/mock_box_data_source.dart';
+import '../utils/item_images.dart';
+import '../widgets/common/item_image.dart';
 import '../widgets/common/luxury_card.dart';
 import '../widgets/dashboard/alert_section.dart';
 import 'item_details_screen.dart';
@@ -70,7 +72,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                 children: [
-                  _GreetingHero(primary: primary),
+                  _GreetingHero(
+                    primary: primary,
+                    onMenu: _openMenu,
+                    onNotifications: _openNotifications,
+                  ),
                   const SizedBox(height: 16),
                   _StatusRow(primary: primary),
                   const SizedBox(height: 24),
@@ -110,12 +116,227 @@ class _DashboardScreenState extends State<DashboardScreen> {
       SnackBar(content: Text('$feature is coming in a later week.')),
     );
   }
+
+  /// Three-bar (hamburger) menu → app quick-actions sheet.
+  void _openMenu() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppTheme.darkCharcoal,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.lightGray,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _menuTile(ctx, Icons.notifications_none_rounded, 'Notifications',
+                () {
+              Navigator.pop(ctx);
+              _openNotifications();
+            }),
+            _menuTile(ctx, Icons.refresh_rounded, 'Refresh data', () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Data refreshed')),
+              );
+            }),
+            _menuTile(ctx, Icons.help_outline_rounded, 'Help & Support', () {
+              Navigator.pop(ctx);
+              showDialog<void>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Help & Support'),
+                  content: Text(
+                    'Need help with your Smart Ration Box?\n\n'
+                    'Email: support@dazcan.com\n'
+                    'Phone: +91 98765 43210',
+                    style: TextStyle(color: AppTheme.lighterGray),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            _menuTile(ctx, Icons.info_outline_rounded, 'About', () {
+              Navigator.pop(ctx);
+              showAboutDialog(
+                context: context,
+                applicationName: 'Smart Ration Box',
+                applicationVersion: 'v1.0.0',
+                applicationIcon:
+                    Icon(Icons.inventory_2_rounded, color: AppTheme.gold),
+              );
+            }),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _menuTile(
+      BuildContext ctx, IconData icon, String label, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.gold),
+      title: Text(label, style: TextStyle(color: AppTheme.lighterGray)),
+      onTap: onTap,
+    );
+  }
+
+  /// Bell icon → notifications sheet built from the live box data.
+  void _openNotifications() {
+    final notes = <_Notification>[];
+    for (final box in _allBoxes) {
+      if (!box.isOnline) {
+        notes.add(_Notification(
+          Icons.wifi_off_rounded,
+          AppTheme.errorRed,
+          '${box.containerName} is offline',
+          'Check the device connection.',
+        ));
+      }
+      if (box.isBatteryLow) {
+        notes.add(_Notification(
+          Icons.battery_alert_rounded,
+          AppTheme.warningOrange,
+          '${box.containerName} battery low',
+          'Battery at ${box.battery}%.',
+        ));
+      }
+      if (box.isLowStock) {
+        notes.add(_Notification(
+          Icons.error_outline_rounded,
+          AppTheme.errorRed,
+          '${box.containerName} low on stock',
+          '${box.currentWeight} kg remaining — plan a refill.',
+        ));
+      }
+      if (box.refillDetected) {
+        notes.add(_Notification(
+          Icons.autorenew_rounded,
+          AppTheme.successGreen,
+          '${box.containerName} refill detected',
+          'Stock updated automatically.',
+        ));
+      }
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppTheme.darkCharcoal,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Notifications',
+                style: TextStyle(
+                  color: AppTheme.lighterGray,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (notes.isEmpty)
+                Row(
+                  children: [
+                    Icon(Icons.check_circle_rounded,
+                        color: AppTheme.successGreen, size: 20),
+                    const SizedBox(width: 10),
+                    Text(
+                      "You're all caught up.",
+                      style: TextStyle(color: AppTheme.lighterGray),
+                    ),
+                  ],
+                )
+              else
+                ...notes.map(
+                  (n) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: n.color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(n.icon, color: n.color, size: 18),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                n.title,
+                                style: TextStyle(
+                                  color: AppTheme.lighterGray,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                n.subtitle,
+                                style: TextStyle(
+                                    color: AppTheme.lightGray, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A single dashboard notification row model.
+class _Notification {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  const _Notification(this.icon, this.color, this.title, this.subtitle);
 }
 
 /// Top greeting band + a decorative oak container "hero" image area.
 class _GreetingHero extends StatelessWidget {
   final SmartBoxData primary;
-  const _GreetingHero({required this.primary});
+  final VoidCallback onMenu;
+  final VoidCallback onNotifications;
+  const _GreetingHero({
+    required this.primary,
+    required this.onMenu,
+    required this.onNotifications,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -123,117 +344,123 @@ class _GreetingHero extends StatelessWidget {
         ? MockData.familyMembers.first.name.split(' ').first
         : 'there';
 
-    return Column(
-      children: [
-        Row(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: SizedBox(
+        height: 210,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Icon(Icons.menu_rounded, color: AppTheme.lighterGray),
-            const Spacer(),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(Icons.notifications_none_rounded,
-                    color: AppTheme.lighterGray),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppTheme.gold,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
+            // Background: a photo of what's actually in the primary box.
+            ItemImage(
+              url: heroImageUrl(primary.containerName),
+              borderRadius: BorderRadius.zero,
+              fallback: _oakGradient(),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
+            // Scrim so the greeting stays legible over any photo.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.20),
+                    Colors.black.withValues(alpha: 0.72),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: onMenu,
+                        customBorder: const CircleBorder(),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(Icons.menu_rounded, color: Colors.white),
+                        ),
+                      ),
+                      const Spacer(),
+                      InkWell(
+                        onTap: onNotifications,
+                        customBorder: const CircleBorder(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              const Icon(Icons.notifications_none_rounded,
+                                  color: Colors.white),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.gold,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  const Text(
                     'Welcome back,',
-                    style: TextStyle(
-                      color: AppTheme.lightGray,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '$name!',
-                    style: TextStyle(
-                      color: AppTheme.lighterGray,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    "Here's what's in your ration box.",
-                    style: TextStyle(
-                      color: AppTheme.lightGray,
-                      fontSize: 12,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Here's what's in your ration box "
+                          '— ${primary.currentWeight} kg on hand.',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            _ContainerHero(weightLabel: '${primary.currentWeight} kg'),
           ],
         ),
-      ],
+      ),
     );
   }
-}
 
-/// Simple oak-styled illustration standing in for the product photo.
-class _ContainerHero extends StatelessWidget {
-  final String weightLabel;
-  const _ContainerHero({required this.weightLabel});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 92,
-      height: 92,
+  /// Fallback backdrop (shown while the photo loads or if it fails).
+  Widget _oakGradient() {
+    return const DecoratedBox(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFD9B98C), Color(0xFFB07D4B)],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.rice_bowl_rounded, color: Colors.white, size: 34),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3A322A).withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              weightLabel,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -357,14 +584,11 @@ class _ItemCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.gold.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(Icons.inventory_2_rounded,
-                    color: AppTheme.gold, size: 22),
+              ItemImage(
+                url: imageUrlForItem(data.containerName),
+                width: 52,
+                height: 52,
+                borderRadius: BorderRadius.circular(14),
               ),
               const SizedBox(width: 12),
               Expanded(
